@@ -1,6 +1,10 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = 3000;
 const PUBLIC_DIR = path.join(__dirname, 'dist');
@@ -44,7 +48,7 @@ const server = http.createServer((req, res) => {
         try {
             const files = getAllFiles(PUBLIC_DIR);
             // Clean paths for display
-            const relativeFiles = files.map(f => f.replace(PUBLIC_DIR, ''));
+            const relativeFiles = files.map(f => f.split('dist')[1] || f);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
                 root: PUBLIC_DIR,
@@ -61,7 +65,7 @@ const server = http.createServer((req, res) => {
     let urlPath = req.url.split('?')[0];
 
     // Default to index.html for root
-    if (urlPath === '/') urlPath = '/index.html';
+    if (urlPath === '/' || urlPath === '') urlPath = '/index.html';
 
     let filePath = path.join(PUBLIC_DIR, urlPath);
     let ext = path.extname(filePath).toLowerCase();
@@ -71,8 +75,8 @@ const server = http.createServer((req, res) => {
         if (err) {
             // File not found
 
-            // If it's an asset (js/css/media), return 404 cleanly
-            if (urlPath.startsWith('/assets/') || ext !== '') {
+            // If it's an asset (js/css/media), return 404 cleanly to avoid MIME errors
+            if (urlPath.startsWith('/assets/') || (ext !== '' && ext !== '.html')) {
                 console.error(`404 Not Found: ${filePath}`);
                 res.writeHead(404, { 'Content-Type': 'text/plain' });
                 res.end(`404 Not Found: ${urlPath}`);
@@ -128,7 +132,7 @@ function serveFile(res, filePath, ext) {
     });
 }
 
-server.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}/`);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${PORT}/`);
     console.log(`Serving files from: ${PUBLIC_DIR}`);
 });
