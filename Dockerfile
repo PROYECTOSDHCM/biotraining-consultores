@@ -21,14 +21,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install 'serve' package globally
-RUN npm install -g serve
+# Copy the custom server script
+COPY server.js .
 
 # Copy the build output from the previous stage
 COPY --from=build /app/dist /app/dist
 
-# Expose port 3000 (standard for Node.js to avoid privilege issues)
+# Expose port (must match server.js)
 EXPOSE 3000
 
-# Start server on port 3000
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Start custom Node server
+CMD ["node", "server.js"]
