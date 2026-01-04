@@ -16,13 +16,17 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve the application with Nginx
-# Stage 2: Serve the application with Node.js (serve)
+# Stage 2: Serve the application with Express
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy the custom server script
-COPY server.js .
+# Copy package.json and server.js
+COPY package*.json ./
+COPY server.js ./
+
+# Install ONLY production dependencies (to keep image small)
+RUN npm install --omit=dev
 
 # Copy the build output from the previous stage
 COPY --from=build /app/dist /app/dist
@@ -30,5 +34,5 @@ COPY --from=build /app/dist /app/dist
 # Expose port (must match server.js)
 EXPOSE 3000
 
-# Start custom Node server
+# Start custom Node/Express server
 CMD ["node", "server.js"]
