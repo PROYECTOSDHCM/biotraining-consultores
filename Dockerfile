@@ -27,8 +27,8 @@ RUN npm install -g serve
 # Copy the build output from the previous stage
 COPY --from=build /app/dist /app/dist
 
-# Expose port 80
-EXPOSE 80
+# Expose port 3000 (standard for Node.js to avoid privilege issues)
+EXPOSE 3000
 
-# Start server on port 80 for the dist folder, single page app mode (-s)
-CMD ["serve", "-s", "dist", "-l", "80"]
+# Start server on port 3000
+CMD ["serve", "-s", "dist", "-l", "3000"]
