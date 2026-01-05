@@ -1,38 +1,16 @@
-# Stage 1: Build the React application
-FROM node:20-alpine as build
-
-WORKDIR /app
-
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application code
-COPY . .
-
-# Build the application
-RUN npm run build
-
-# Stage 2: Serve the application with Nginx
-# Stage 2: Serve the application with Express
+# Failsafe Dockerfile: Pre-built Strategy
 FROM node:20-alpine
-
 WORKDIR /app
 
-# Copy package.json and server.js
+# Copy ONLY necessary server files
 COPY package*.json ./
 COPY server.js ./
+# We copy the ALREADY BUILT dist folder from local
+COPY dist ./dist
 
-# Install ONLY production dependencies (to keep image small)
-RUN npm install --omit=dev
+# Install production dependencies (Express)
+RUN npm install --omit=dev --no-audit --no-fund
 
-# Copy the build output from the previous stage
-COPY --from=build /app/dist /app/dist
-
-# Expose port (must match server.js)
 EXPOSE 3000
 
-# Start custom Node/Express server
 CMD ["node", "server.js"]
