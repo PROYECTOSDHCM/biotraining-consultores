@@ -10,13 +10,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'dist');
 
-// Middleware para logging básico
+// Middleware para logging y diagnóstico
 app.use((req, res, next) => {
+    res.setHeader('X-Debug-Mode', 'Antigravity-Express-v2');
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
     next();
 });
 
-// Endpoint de depuración (Vital para ver qué hay en el servidor)
+// Endpoint de depuración
 app.get('/debug-ls', (req, res) => {
     const getAllFiles = function (dirPath, arrayOfFiles) {
         let files = [];
@@ -39,14 +40,19 @@ app.get('/debug-ls', (req, res) => {
 
     try {
         const files = getAllFiles(PUBLIC_DIR);
-        const relativeFiles = files.map(f => f.replace(PUBLIC_DIR, ''));
-        res.json({ root: PUBLIC_DIR, files: relativeFiles });
+        const relativeFiles = files.map(f => f.split('dist')[1] || f);
+        res.json({
+            identity: 'Antigravity Debug Server',
+            timestamp: new Date().toISOString(),
+            root: PUBLIC_DIR,
+            files: relativeFiles
+        });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// Servir archivos estáticos con Headers de Cache optimizados
+// Servir archivos estáticos
 app.use(express.static(PUBLIC_DIR, {
     maxAge: '1y',
     setHeaders: (res, path) => {
@@ -56,12 +62,11 @@ app.use(express.static(PUBLIC_DIR, {
     }
 }));
 
-// SPA Fallback: Cualquier ruta que no sea un archivo, sirve index.html
+// SPA Fallback
 app.get('*', (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Production server running at http://0.0.0.0:${PORT}`);
-    console.log(`📁 Serving content from: ${PUBLIC_DIR}`);
 });
