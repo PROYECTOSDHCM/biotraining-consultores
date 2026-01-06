@@ -1,19 +1,19 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copiamos package.json y package-lock.json
+# Copiar package.json y package-lock.json desde el contexto de build
 COPY package*.json ./
 
-# Instalamos todas las dependencias (dev + prod)
+# Instalar dependencias (dev + prod)
 RUN npm install --no-audit --no-fund
 
-# Copiamos el resto del código (NO copiamos dist explícitamente)
+# Copiar todo el código (src, index.html, server.js, etc.)
 COPY . .
 
-# Construimos el frontend (genera /dist dentro de la imagen)
+# Construir el frontend de Vite
 RUN npm run build
 
-# Instalamos solo dependencias de producción (para Express y server.js)
+# Instalar solo dependencias de producción
 RUN npm install --omit=dev --no-audit --no-fund
 
 EXPOSE 3000
