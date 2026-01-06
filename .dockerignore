@@ -1,12 +1,7 @@
 node_modules
-dist
-.git
-.gitignore
-*.md
-.agent
-.gemini
-package-lock.json
 npm-debug.log
-error-handler.log
-audit_package_code_only.zip
-audit_package.zip
+.git
+.vscode
+.vercel
+dist-ssr
+*.local
